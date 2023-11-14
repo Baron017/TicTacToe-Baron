@@ -4,6 +4,7 @@ import sys
 pygame.init()
 
 # Constants
+#Console version
 WIDTH = 600
 HEIGHT = 600
 BOARD_SIZE = 3
