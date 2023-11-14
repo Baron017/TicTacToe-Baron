@@ -1,73 +1,80 @@
 import pygame
 import sys
 
-def initialize_board():
-    return [[[0] * 3 for _ in range(3)] for _ in range(3)]
+pygame.init()
 
-def print_board(board):
-    for layer in board:
-        for row in layer:
-            print(" | ".join(map(str, row)))
-            print("-" * 9)
-        print("-" * 27)
+# Constants
+WIDTH = 600
+HEIGHT = 600
+BOARD_SIZE = 3
+CELL_SIZE = WIDTH // BOARD_SIZE
 
-def make_move(board, player, layer, row, col):
-    if board[layer][row][col] == 0:
-        board[layer][row][col] = player
-        return True
-    else:
-        print("Invalid move. Try again.")
-        return False
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+LINE_COLOR = (0, 0, 0)
+PLAYER1_COLOR = (255, 0, 0)
+PLAYER2_COLOR = (0, 0, 255)
 
-def check_win(board, player):
-    for layer in board:
-        # Checking rows and columns
-        for i in range(3):
-            if all(cell == player for cell in layer[i]) or all(layer[j][i] == player for j in range(3)):
-                return True
+# Initialize the game window
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("3D Tic Tac Toe")
 
-        # Check diagonals
-        if all(layer[i][i] == player for i in range(3)) or all(layer[i][2 - i] == player for i in range(3)):
-            return True
+# Initialize the game board
+board = [[[0] * BOARD_SIZE for _ in range(BOARD_SIZE)] for _ in range(BOARD_SIZE)]
+current_player = 1  # Player 1 starts
 
-     #Checking 3D diagonals
-    if all(board[i][i][i] == player for i in range(3)) or all(board[i][i][2 - i] == player for i in range(3)):
-        return True
+# Functions
+def draw_board():
+    screen.fill(WHITE)
 
-    # Check vertical columns
-    for i in range(3):
-        if all(board[j][i][i] == player for j in range(3)) or all(board[j][i][2 - i] == player for j in range(3)):
-            return True
+    # Draw horizontal lines
+    for i in range(1, BOARD_SIZE):
+        pygame.draw.line(screen, LINE_COLOR, (0, i * CELL_SIZE), (WIDTH, i * CELL_SIZE), 2)
 
-    return False
+    # Draw vertical lines
+    for i in range(1, BOARD_SIZE):
+        pygame.draw.line(screen, LINE_COLOR, (i * CELL_SIZE, 0), (i * CELL_SIZE, HEIGHT), 2)
 
-def is_board_full(board):
-    return all(all(all(cell != 0 for cell in row) for row in layer) for layer in board)
+    # Draw the moves
+    for z in range(BOARD_SIZE):
+        for y in range(BOARD_SIZE):
+            for x in range(BOARD_SIZE):
+                if board[z][y][x] == 1:
+                    pygame.draw.circle(screen, PLAYER1_COLOR, (x * CELL_SIZE + CELL_SIZE // 2, y * CELL_SIZE + CELL_SIZE // 2), CELL_SIZE // 3)
+                elif board[z][y][x] == 2:
+                    pygame.draw.line(screen, PLAYER2_COLOR, (x * CELL_SIZE, y * CELL_SIZE), ((x + 1) * CELL_SIZE, (y + 1) * CELL_SIZE), 2)
+                    pygame.draw.line(screen, PLAYER2_COLOR, ((x + 1) * CELL_SIZE, y * CELL_SIZE), (x * CELL_SIZE, (y + 1) * CELL_SIZE), 2)
 
-def play_game():
-    board = initialize_board()
-    current_player = 1
+    pygame.display.flip()
 
-    while True:
-        print_board(board)
+# Main game loop
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            x = pos[0] // CELL_SIZE
+            y = pos[1] // CELL_SIZE
 
-        print(f"Player {current_player}'s turn:")
-        layer = int(input("Enter layer (0-2): "))
-        row = int(input("Enter row (0-2): "))
-        col = int(input("Enter column (0-2): "))
+            # Check if the selected cell is empty
+            if board[0][y][x] == 0:
+                # Find the lowest empty layer
+                z = 0
+                while z < BOARD_SIZE - 1 and board[z + 1][y][x] == 0:
+                    z += 1
 
-        if make_move(board, current_player, layer, row, col):
-            if check_win(board, current_player):
-                print_board(board)
-                print(f"Player {current_player} wins!")
-                break
-            elif is_board_full(board):
-                print_board(board)
-                print("It's a tie!")
-                break
-            else:
+                # Make the move
+                board[z][y][x] = current_player
+
+                # Check for a winner
+                # (You need to implement the check_win function based on your specific win conditions)
+
+                # Switch to the next player
                 current_player = 3 - current_player  # Switch between players 1 and 2
 
-if __name__ == "__main__":
-    play_game()
+    # Draw the game board
+    draw_board()
 
